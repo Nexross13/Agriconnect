@@ -31,7 +31,7 @@ public class CentraleGestion extends UnicastRemoteObject implements CentraleInte
         } catch (Exception e) {
             System.err.println("Erreur lors de l'écriture dans le fichier : " + e.toString());
         }
-        }
+    }
 
     // Méthode main
     public static void main(String[] args) {

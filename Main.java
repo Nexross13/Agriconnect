@@ -6,8 +6,8 @@ public class Main {
         Capteur capteur3 = new Capteur("3", 39.5000, 3.9373);
         Capteur capteur4 = new Capteur("4", 18.9000, 6.2663);
         Capteur capteur5 = new Capteur("5", 17.7000, 4.9333);
-        // Appel de la méthode envoyerDonnees de l'instance du capteur
-        // Cette méthode envoie des données générées aléatoirement à la centrale à intervalles réguliers
+
+        // Connexion des capteurs
         capteur1.connexionCentrale();
         capteur2.connexionCentrale();
         capteur3.connexionCentrale();
