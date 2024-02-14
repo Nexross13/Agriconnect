@@ -47,7 +47,7 @@ public class Capteur {
                 // Recherche de la centrale dans le registre RMI
                 CentraleInterface centrale = (CentraleInterface) registry.lookup("Centrale");
                 // Envoi des données à la centrale
-                centrale.recevoirDonnees(id, temperature, humidite, humidite, humidite);
+                centrale.recevoirDonnees(id, temperature, humidite, latitude, longitude);
 
                 System.out.println("Données envoyées par le capteur " + id);
             } catch (Exception erreur) {
