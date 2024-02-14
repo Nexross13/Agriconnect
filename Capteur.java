@@ -31,8 +31,6 @@ public class Capteur {
         this.humidite = Math.round(Math.random() * 100 * 10) / 10.0; // Nombre aléaoire entre 0 et 100
     }
 
-
-    // Méthode pour envoyer des données
     public void connexionCentrale() {
         // Création d'un service d'exécution planifiée
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
