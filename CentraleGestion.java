@@ -11,7 +11,7 @@ public class CentraleGestion extends UnicastRemoteObject implements CentraleInte
 
     // Constructeur de la classe CentraleGestion
     public CentraleGestion() throws RemoteException {
-
+        super();
     }
 
     // Méthode recevoirDonnees de la class CentraleInterface
