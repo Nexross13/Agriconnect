@@ -1,17 +1,24 @@
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+
 public class Main {
     public static void main(String[] args) {
-        // Création des capteurs
-        Capteur capteur1 = new Capteur("1", 43.6000, 1.4333);
-        Capteur capteur2 = new Capteur("2", 44.1000, 2.8333);
-        Capteur capteur3 = new Capteur("3", 39.5000, 3.9373);
-        Capteur capteur4 = new Capteur("4", 18.9000, 6.2663);
-        Capteur capteur5 = new Capteur("5", 17.7000, 4.9333);
+        CentraleMetier centraleMetier = new CentraleMetier();
+        
+        try {
+            CentraleImpl centraleImpl = new CentraleImpl(centraleMetier);
 
-        // Connexion des capteurs
-        capteur1.connexionCentrale();
-        capteur2.connexionCentrale();
-        capteur3.connexionCentrale();
-        capteur4.connexionCentrale();
-        capteur5.connexionCentrale();
-    } 
+            LocateRegistry.createRegistry(4444);
+
+            Naming.rebind("rmi://localhost:4444/centrale", centraleImpl);// permet d'associer un nom à un objet
+            System.out.println("Serveur lancé");
+
+        } catch (RemoteException er) {
+            er.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 }

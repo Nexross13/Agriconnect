@@ -12,9 +12,17 @@ Vous êtes mandaté pour réaliser une telle application sur la base d’appl
 - [To-do list](#to-do-list)
 
 ## Features
+**Capteurs**
+
+- Enregistrement à la centrale,
+- Simulation de data,
+- Envoie de data.
+
+**Centrale**
+
+- Enregistrements des capteurs,
+- Récéption des datas,
+- Enregistrements des datas dans un fichier.
 
 ## Updates
-
-## To-do list
-|Fonctionnalité|Serveur ou capteur|Done ?|
-|:------------:|:----------------:|:----:|
+V1 -> Création des capteurs et de la centrale. Les capteurs peuvent se connecter à la centrale. La centrale va recevoir les data et les enregistrer dans un fichier .txt.

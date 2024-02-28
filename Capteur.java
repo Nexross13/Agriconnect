@@ -1,68 +1,97 @@
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
-
-// Définition de la classe Capteur
 public class Capteur {
-    private String id; // Identifiant unique du capteur
+    // Attributs
+    private int id;
+    private String name; // Nom du capteur
     private double latitude; // Latitude du capteur
     private double longitude; // Longitude du capteur
-    private double temperature; // Température enregistrée par le capteur
-    private double humidite; // Humidité enregistrée par le capteur
+    private double temperature; // Température du capteur
+    private double humidity; // Humidité du capteur
 
-    // Constructeur de la classe Capteur
-    public Capteur(String id, double latitude, double longitude) {
-        this.id = id; // Initialisation de l'identifiant
-        this.latitude = latitude; // Initialisation de la latitude
-        this.longitude = longitude; // Initialisation de la longitude
+    // constructeur
+    public Capteur(String name, double latitude, double longitude) {
+        this.id = new Random().nextInt(100);
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    private void mesurerTemperature() {
-        // Simulation de la mesure de température
+    //getter
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public double getTemperature() {
+        makeTemperature();
+        return temperature;
+    }
+
+    public double getHumidity() {
+        makeHumidity();
+        return humidity;
+    }
+
+    // Methodes
+    public void makeTemperature(){
         this.temperature = Math.round(Math.random() * 30 * 10) / 10.0; // On créer un nombre aléatoire entre 0 et 30, puis on arrondi la valeur aléatoire à 1 chiffre après la virgule
     }
 
-    private void mesurerHumidite() {
-        // Simulation de la mesure d'humidité
-        this.humidite = Math.round(Math.random() * 100 * 10) / 10.0; // Nombre aléaoire entre 0 et 100
+    public void makeHumidity(){
+        this.humidity = Math.round(Math.random() * 100 * 10) / 10.0; // On créer un nombre aléatoire entre 0 et 100, puis on arrondi la valeur aléatoire à 1 chiffre après la virgule
     }
 
-    public void connexionCentrale() {
-        // Création d'un service d'exécution planifiée
+    public static void main(String[] args) {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-        // Définition de la tâche à exécuter
-        Runnable task = () -> {
-            try {
-                // Génération de données aléatoires pour la température et l'humidité
-                mesurerTemperature();
-                mesurerHumidite();
+        Capteur capteur = new Capteur("Capteur2", 48.666, 2.777);
 
-                Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
-                
-                // Recherche de la centrale dans le registre RMI
-                CentraleInterface centrale = (CentraleInterface) registry.lookup("Centrale");
-                // Envoi des données à la centrale
-                centrale.recevoirDonnees(id, temperature, humidite, latitude, longitude);
+        Remote centraleLink;
+        try {
+            System.out.println("Connexion au serveur");
+            centraleLink = Naming.lookup("rmi://localhost:4444/centrale");
+            Centrale centrale = (Centrale) centraleLink;
 
-                System.out.println("Données envoyées par le capteur " + id);
-            } catch (Exception erreur) {
-                // Affichage d'un message d'erreur si ça ne marche pas
-                System.err.println("Erreur du capteur " + id);
-            }
-        };
+            centrale.registerCapteur(capteur.getName(), capteur.getLatitude(), capteur.getLongitude());
+            System.out.println("Capteur " + capteur.name + " enregistré");
+            
+            Runnable task = () -> {
+                while (true) {
+                    try {
+                        centrale.receiveData(capteur.getName());
+                        break;
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    } catch (CapteurInknowException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
 
-        // Planification de la tâche pour qu'elle s'exécute toutes les 5 secondes
-        executor.scheduleAtFixedRate(task, 0, 5, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(task, 0, 5, TimeUnit.SECONDS);
+
+        } catch (MalformedURLException | RemoteException | NotBoundException e) {
+            e.printStackTrace();
+        }
     }
-
-
-    // Getter pour la longitude
-    public String getId() {
-        return id;
-    } 
 }
