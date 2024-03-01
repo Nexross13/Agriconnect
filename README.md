@@ -24,5 +24,12 @@ Vous êtes mandaté pour réaliser une telle application sur la base d’appl
 - Récéption des datas,
 - Enregistrements des datas dans un fichier.
 
+**Client**
+
+- Ajout de capteur
+- Manipulation du menu (affichage de data, etc)
+
 ## Updates
+V2 -> Réorganisation des fichiers, ajouts de nouvelles fonctionnalités, ajout d'une interface client.
+
 V1 -> Création des capteurs et de la centrale. Les capteurs peuvent se connecter à la centrale. La centrale va recevoir les data et les enregistrer dans un fichier .txt.
