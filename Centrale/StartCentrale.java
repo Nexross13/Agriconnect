@@ -1,20 +1,26 @@
 package Centrale;
 
-
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
 public class StartCentrale {
     public static void main(String[] args) {
+        CentraleMetier centraleMetier = new CentraleMetier();
+        
         try {
-            LocateRegistry.createRegistry(1099); // Démarrer le registre RMI sur le port 1100
-            CentraleInterface centrale = new CentraleImpl();
-            Naming.rebind("rmi://localhost/Centrale", centrale);
-            System.out.println("Centrale prête.");
-        } catch (Exception e) {
-            System.err.println("Exception lors du démarrage de la centrale: " + e.toString());
+            CentraleImpl centraleImpl = new CentraleImpl(centraleMetier);
+
+            LocateRegistry.createRegistry(4444);
+
+            Naming.rebind("rmi://localhost:4444/centrale", centraleImpl);// permet d'associer un nom à un objet
+            System.out.println("Serveur lancé");
+
+        } catch (RemoteException er) {
+            er.printStackTrace();
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
     }
 }
-

@@ -9,7 +9,6 @@ Vous êtes mandaté pour réaliser une telle application sur la base d’appl
 ## Sommaire
 - [Features](#features)
 - [Update](#updates)
-- [To-do list](#to-do-list)
 
 ## Features
 **Capteurs**
