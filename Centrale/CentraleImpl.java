@@ -41,4 +41,14 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     public CapteurInterface getLastInfoCapteur(int id) throws RemoteException {
         return centraleMetier.getLastInfoCapteur(id);
     }
+
+    @Override
+    public void activerCapteur(int id) throws RemoteException, CapteurInknowException {
+        centraleMetier.activerCapteur(id);
+    }
+
+    @Override
+    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException {
+        centraleMetier.desactiverCapteur(id);
+    }
 }

@@ -3,7 +3,6 @@ package Capteur;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.Timer;
 
 public interface CapteurInterface extends Remote {
     void activer() throws RemoteException;
@@ -16,6 +15,4 @@ public interface CapteurInterface extends Remote {
     int getInterval()throws RemoteException;
     void setInterval(int intervalle)throws RemoteException;
     boolean getEstActif()throws RemoteException;
-    Timer getTimer()throws RemoteException;
-    void setTimer(Timer timer)throws RemoteException;
 }

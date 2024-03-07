@@ -25,8 +25,8 @@ public class ApplicationClient {
                 System.out.println("3. Modifier intervalle de mesure pour un capteur ou tous");
                 System.out.println("4. Ajouter un capteur");
                 System.out.println("5. Activer un capteur");
-                System.out.println("6. Retirer un capteur");
-                System.out.println("7. Calculer la moyenne et la tendance pour un capteur");
+                System.out.println("6. Désactiver un capteur");
+                System.out.println("7. Calculer la moyenne et la tendance pour un capteur"); // via bdd
                 System.out.println("8. Quitter");
                 System.out.print("Choix: ");
                 int choix = scanner.nextInt();
@@ -45,12 +45,10 @@ public class ApplicationClient {
                         ajouterCapteur(scanner);
                         break;
                     case 5:
-                        //activerCapteur(scanner);
-                        System.out.println("Activer un capteur");
+                        activerCapteur(scanner);
                         break;
                     case 6:
-                        //retirerCapteur(scanner);
-                        System.out.println("Retirer un capteur");
+                        retirerCapteur(scanner);
                         break;
                     case 7:
                         //calculerMoyenneEtTendance(scanner); 
@@ -98,6 +96,18 @@ public class ApplicationClient {
         
         centrale.registerCapteur(id);
         System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
+    }
+
+    private static void activerCapteur(Scanner scanner) throws Exception {
+        System.out.print("Entrez l'ID du capteur: ");
+        int id = scanner.nextInt();
+        centrale.activerCapteur(id);
+    }
+
+    private static void retirerCapteur(Scanner scanner) throws Exception {
+        System.out.print("Entrez l'ID du capteur: ");
+        int id = scanner.nextInt();
+        centrale.desactiverCapteur(id);
     }
 
     private static void modifierIntervalleMesure(Scanner scanner) throws Exception {

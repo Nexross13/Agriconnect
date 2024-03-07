@@ -13,4 +13,6 @@ public interface Centrale extends java.rmi.Remote {
     public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException;
     public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException;
     public CapteurInterface getLastInfoCapteur(int id) throws RemoteException;
+    public void activerCapteur(int id) throws RemoteException, CapteurInknowException;
+    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException;
 }

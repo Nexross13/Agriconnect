@@ -30,6 +30,31 @@ public class CentraleMetier  {
         receiveData(id);
     }
 
+    public void unregisterCapteur(int id) throws RemoteException {
+        if (this.capteurs.containsKey(id)) {
+            this.capteurs.remove(id);
+            System.out.println("Capteur " + id + " retiré.");
+        }
+    }
+
+    public void activerCapteur(int id) throws RemoteException, CapteurInknowException {
+        if (this.capteurs.containsKey(id) && !this.capteurs.get(id).getEstActif()) {
+            CapteurInterface capteur = this.capteurs.get(id);
+            capteur.activer();
+            receiveData(id);
+            System.out.println("Capteur " + id + " activé.");
+        }
+    }
+
+    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException {
+        if (this.capteurs.containsKey(id) && this.capteurs.get(id).getEstActif()) {
+            CapteurInterface capteur = this.capteurs.get(id);
+            capteur.desactiver();
+            executor.shutdown();
+            System.out.println("Capteur " + id + " désactivé.");
+        }
+    }
+
     public void afficherData(int id) throws RemoteException {
         if (this.capteurs.containsKey(id)) {
             CapteurInterface capteur = this.capteurs.get(id);
