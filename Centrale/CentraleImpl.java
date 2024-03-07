@@ -24,4 +24,9 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     public void afficherData(int id) throws RemoteException {
         centraleMetier.afficherData(id);
     }
+
+    @Override
+    public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException {
+        centraleMetier.modifInterval(id, intervalle);
+    }
 }

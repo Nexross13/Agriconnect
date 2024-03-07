@@ -37,8 +37,7 @@ public class ApplicationClient {
                         System.out.println("Obtenir infos capteur");
                         break;
                     case 3:
-                        //modifierIntervalleMesure(scanner);
-                        System.out.println("Modifier intervalle de mesure pour un capteur ou tous");
+                        modifierIntervalleMesure(scanner);
                         break;
                     case 4:
                         ajouterCapteur(scanner);
@@ -78,6 +77,15 @@ public class ApplicationClient {
         
         centrale.registerCapteur(id);
         System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
+    }
+
+    private static void modifierIntervalleMesure(Scanner scanner) throws Exception {
+        System.out.print("Entrez l'ID du capteur (ou 0 pour tous les capteurs): ");
+        int id = scanner.nextInt();
+        System.out.print("Entrez le nouvel intervalle de mesure: ");
+        int intervalle = scanner.nextInt();
+        
+        centrale.modifInterval(id, intervalle);
     }
 }
 

@@ -7,6 +7,7 @@ public class StartCapteur {
     public static void main(String[] args) throws RemoteException {
         System.out.print("Entrez l'ID du nouveau capteur: ");
         int id = Math.random() > 0 ? (int) (Math.random() * 1000) : (int) (Math.random() * 1000) * -1;
+        id = id + 1;
         double latitude = Math.random() * 180 - 90;
         double longitude = Math.random() * 360 - 180;
         System.out.println("Latitude: " + latitude + ", Longitude: " + longitude);
