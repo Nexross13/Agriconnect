@@ -88,4 +88,8 @@ public class CentraleMetier  {
             throw new CapteurInknowException();
         }
     }
+    
+    public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException {
+        return this.capteurs;
+    }
 }

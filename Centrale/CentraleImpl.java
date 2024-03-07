@@ -3,8 +3,10 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 
 import Capteur.CapteurInknowException;
+import Capteur.CapteurInterface;
 
 public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     
@@ -28,5 +30,10 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     @Override
     public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException {
         centraleMetier.modifInterval(id, intervalle);
+    }
+
+    @Override
+    public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException {
+        return centraleMetier.getCapteurs();
     }
 }

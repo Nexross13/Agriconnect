@@ -1,7 +1,11 @@
 package Client;
 
 import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.Scanner;
+
+import Capteur.CapteurInterface;
 import Centrale.Centrale;
 
 public class ApplicationClient {
@@ -29,8 +33,7 @@ public class ApplicationClient {
 
                 switch (choix) {
                     case 1:
-                        //listerCapteurs();
-                        System.out.println("Liste des capteurs:");
+                        listerCapteurs();
                         break;
                     case 2:
                         //obtenirInfosCapteur(scanner);
@@ -68,6 +71,18 @@ public class ApplicationClient {
             System.err.println("Erreur: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static void listerCapteurs() throws Exception {
+        System.out.println("Liste des capteurs:");
+        HashMap<Integer, CapteurInterface> listeCapteur = centrale.getCapteurs();
+        listeCapteur.forEach((id, capteur) -> {
+            try {
+                System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // Ajouter un nouveau capteur et l'activer.
