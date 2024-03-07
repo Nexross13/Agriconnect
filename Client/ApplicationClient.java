@@ -36,8 +36,7 @@ public class ApplicationClient {
                         listerCapteurs();
                         break;
                     case 2:
-                        //obtenirInfosCapteur(scanner);
-                        System.out.println("Obtenir infos capteur");
+                        obtenirInfosCapteur(scanner);
                         break;
                     case 3:
                         modifierIntervalleMesure(scanner);
@@ -83,6 +82,13 @@ public class ApplicationClient {
                 e.printStackTrace();
             }
         });
+    }
+
+    private static void obtenirInfosCapteur(Scanner scanner) throws Exception {
+        System.out.print("Entrez l'ID du capteur: ");
+        int id = scanner.nextInt();
+        CapteurInterface capteur = centrale.getLastInfoCapteur(id);
+        System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude() + " | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
     }
 
     // Ajouter un nouveau capteur et l'activer.
