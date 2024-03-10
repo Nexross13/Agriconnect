@@ -48,7 +48,7 @@ public class ApplicationClient {
                         activerCapteur(scanner);
                         break;
                     case 6:
-                        retirerCapteur(scanner);
+                        desactiverCapteur(scanner);
                         break;
                     case 7:
                         //calculerMoyenneEtTendance(scanner); 
@@ -75,7 +75,8 @@ public class ApplicationClient {
         HashMap<Integer, CapteurInterface> listeCapteur = centrale.getCapteurs();
         listeCapteur.forEach((id, capteur) -> {
             try {
-                System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude());
+                String etat = capteur.getEstActif() ? "ACTIF" : "DESACTIVE";
+                System.out.println("[" + etat +"] ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude());
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -86,7 +87,11 @@ public class ApplicationClient {
         System.out.print("Entrez l'ID du capteur: ");
         int id = scanner.nextInt();
         CapteurInterface capteur = centrale.getLastInfoCapteur(id);
-        System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude() + " | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
+        if (capteur == null) {
+            System.out.println("Capteur avec ID " + id + " n'existe pas ou n'est pas activé.");
+        } else {
+            System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude() + " | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
+        }
     }
 
     // Ajouter un nouveau capteur et l'activer.
@@ -102,12 +107,14 @@ public class ApplicationClient {
         System.out.print("Entrez l'ID du capteur: ");
         int id = scanner.nextInt();
         centrale.activerCapteur(id);
+        System.out.println("Capteur " + id + " activé.");
     }
 
-    private static void retirerCapteur(Scanner scanner) throws Exception {
+    private static void desactiverCapteur(Scanner scanner) throws Exception {
         System.out.print("Entrez l'ID du capteur: ");
         int id = scanner.nextInt();
         centrale.desactiverCapteur(id);
+        System.out.println("Capteur " + id + " désactivé.");
     }
 
     private static void modifierIntervalleMesure(Scanner scanner) throws Exception {
@@ -115,7 +122,6 @@ public class ApplicationClient {
         int id = scanner.nextInt();
         System.out.print("Entrez le nouvel intervalle de mesure: ");
         int intervalle = scanner.nextInt();
-        
         centrale.modifInterval(id, intervalle);
     }
 }

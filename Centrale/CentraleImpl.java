@@ -1,4 +1,5 @@
 package Centrale;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -18,17 +19,12 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
-    public void registerCapteur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException{
+    public void registerCapteur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException{
         centraleMetier.registerCapteur(id);
     }
 
     @Override
-    public void afficherData(int id) throws RemoteException {
-        centraleMetier.afficherData(id);
-    }
-
-    @Override
-    public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException {
+    public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException, IOException {
         centraleMetier.modifInterval(id, intervalle);
     }
 
@@ -43,12 +39,12 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
-    public void activerCapteur(int id) throws RemoteException, CapteurInknowException {
+    public void activerCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
         centraleMetier.activerCapteur(id);
     }
 
     @Override
-    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException {
+    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
         centraleMetier.desactiverCapteur(id);
     }
 }
