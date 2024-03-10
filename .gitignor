@@ -1,0 +1,3 @@
+# ignore any files in Data and Logs
+Logs/
+Data/

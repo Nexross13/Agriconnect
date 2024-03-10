@@ -27,7 +27,7 @@ public class CentraleMetier  {
     private void ecrireLog(String message) throws IOException {
         LocalDateTime now = LocalDateTime.now();
         String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
-        FileWriter writer = new FileWriter("Logs/log.txt", true);
+        FileWriter writer = new FileWriter("Logs/capteur.log", true);
         writer.write("[" + formatter + "] : " + message);
         writer.close();
     }
@@ -35,7 +35,7 @@ public class CentraleMetier  {
     public void registerCapteur(int id) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException {
         CapteurInterface capteur = (CapteurInterface) Naming.lookup("rmi://localhost:4444/" + id);
         this.capteurs.put(id, capteur);
-        String message = "Le capteur " + id + " a été ajouté à la centrale" + "%\n";
+        String message = "Le capteur " + id + " a été ajouté à la centrale" + "\n";
         ecrireLog(message);
         receiveData(id);
     }
@@ -50,7 +50,7 @@ public class CentraleMetier  {
         if (this.capteurs.containsKey(id) && !this.capteurs.get(id).getEstActif()) {
             CapteurInterface capteur = this.capteurs.get(id);
             capteur.activer();
-            String message = "Le capteur " + id + " a été activé" + "%\n";
+            String message = "Le capteur " + id + " a été activé" + "\n";
             ecrireLog(message);
             receiveData(id);
         }
@@ -60,7 +60,7 @@ public class CentraleMetier  {
         if (this.capteurs.containsKey(id) && this.capteurs.get(id).getEstActif()) {
             CapteurInterface capteur = this.capteurs.get(id);
             capteur.desactiver();
-            String message = "Le capteur " + id + " a été désactivé" + "%\n";
+            String message = "Le capteur " + id + " a été désactivé" + "\n";
             ecrireLog(message);
             executor.shutdown();
         }
@@ -72,7 +72,7 @@ public class CentraleMetier  {
                 try {
                     capteur.setInterval(intervalle);
                     executor.shutdown();
-                    String message = "L'intervalle de tous les capteurs a été modifié à " + intervalle + " secondes " + "%\n";
+                    String message = "L'intervalle de tous les capteurs a été modifié à " + intervalle + " secondes " + "\n";
                     ecrireLog(message);
                     receiveData(capteur.getId());
                 } catch (Exception e) {
@@ -99,7 +99,7 @@ public class CentraleMetier  {
                         LocalDateTime now = LocalDateTime.now();
                         String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
                         //ecrire dans un fichier
-                        FileWriter writer = new FileWriter("data.txt", true);
+                        FileWriter writer = new FileWriter("Data/data.txt", true);
                         writer.write("[" + formatter + "] Capteur " + id + " : " + capteur.getTemperature() + "°C, " + capteur.getHumidite() + "%\n");
                         writer.close();
                         break;

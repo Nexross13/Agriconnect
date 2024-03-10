@@ -4,7 +4,6 @@ On souhaite mettre en œuvre un réseau de capteurs et d’actionneur pour faci
 Ce système permet, par l’intermédiaire de capteurs, de surveiller deux paramètres essentiels des cultures : l’humidité du sol et la température de l’air.
 Grace à l’utilisation d’actionneurs, le système pourra déclencher l’arrosage des cultures si besoin.
 Le tout pourra être surveillé (et géré) par l’agriculteur sur une application cliente.
-Vous êtes mandaté pour réaliser une telle application sur la base d’applications lourdes en Java.
 
 ## Sommaire
 - [Features](#features)
@@ -21,7 +20,8 @@ Vous êtes mandaté pour réaliser une telle application sur la base d’appl
 
 - Enregistrements des capteurs,
 - Récéption des datas,
-- Enregistrements des datas dans un fichier.
+- Enregistrements des datas dans un fichier,
+- Enregistre des logs pour toutes activités du capteurs.
 
 **Client**
 
