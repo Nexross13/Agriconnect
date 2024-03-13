@@ -61,11 +61,15 @@ public class CapteurImpl extends UnicastRemoteObject implements CapteurInterface
     }
 
     private void makeMeasureTemp() {
-        temperature = Math.round(Math.random() * 30 * 10) / 10.0;
+        temperature += (Math.random() * 6 - 3);
+        temperature = Math.min(Math.max(temperature, 0), 30);
+        temperature = Math.round(temperature * 100) / 100.0;
     }
 
     private void makeMeasureHumi() {
-        humidite = Math.round(Math.random() * 100 * 10) / 10.0;
+        humidite += (Math.random() * 6 - 3);
+        humidite = Math.min(Math.max(humidite, 0), 100);
+        humidite = Math.round(humidite * 100) / 100.0;
     }
 
     // Active le capteur, l'ajoute à la centrale et commence l'envoi périodique des mesures.

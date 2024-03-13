@@ -104,14 +104,18 @@ public class CentraleMetier  {
             Runnable task = () -> {
                 while (true) {
                     try {
+                        double temperature = capteur.getTemperature();
+                        double humidite = capteur.getHumidite();
                         LocalDateTime now = LocalDateTime.now();
                         String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+
                         //ecrire dans un fichier
                         FileWriter writer = new FileWriter("Data/data.txt", true);
-                        writer.write("[" + formatter + "] Capteur " + id + " : " + capteur.getTemperature() + "°C, " + capteur.getHumidite() + "%\n");
+                        writer.write("[" + formatter + "] Capteur " + id + " : " + temperature + "°C, " + humidite + "%\n");
                         writer.close();
+                        
                         //ecrire les data dans bdd
-                        writeDataInBdd(id, capteur.getTemperature(), capteur.getHumidite());
+                        writeDataInBdd(id, temperature, humidite);
                         break;
                     } catch (RemoteException e) {
                         e.printStackTrace();
