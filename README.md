@@ -20,7 +20,7 @@ Le tout pourra être surveillé (et géré) par l’agriculteur sur une appl
 
 - Enregistrements des capteurs,
 - Récéption des datas,
-- Enregistrements des datas dans un fichier,
+- Enregistrements des datas dans un fichier + dans BDD,
 - Enregistre des logs pour toutes activités du capteurs.
 
 **Client**

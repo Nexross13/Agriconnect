@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.sql.*;
 
 import Capteur.CapteurInknowException;
 import Capteur.CapteurInterface;
@@ -18,9 +19,16 @@ import Capteur.CapteurInterface;
 public class CentraleMetier  {
     private HashMap<Integer, CapteurInterface> capteurs;
     private ScheduledExecutorService executor;
+    private Connection bdd;
 
     public CentraleMetier() {
         this.capteurs = new HashMap<Integer, CapteurInterface>();
+        try {
+            String urlDB = "jdbc:mysql://localhost:8889/agriconnect";
+            this.bdd = DriverManager.getConnection(urlDB, "root", "root");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //Methodes
@@ -102,10 +110,14 @@ public class CentraleMetier  {
                         FileWriter writer = new FileWriter("Data/data.txt", true);
                         writer.write("[" + formatter + "] Capteur " + id + " : " + capteur.getTemperature() + "°C, " + capteur.getHumidite() + "%\n");
                         writer.close();
+                        //ecrire les data dans bdd
+                        writeDataInBdd(id, capteur.getTemperature(), capteur.getHumidite());
                         break;
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }
@@ -116,6 +128,14 @@ public class CentraleMetier  {
         } else {
             throw new CapteurInknowException();
         }
+    }
+
+    private void writeDataInBdd(int id, double temperature, double humidite) throws SQLException {
+        CallableStatement ajoutDonnees = this.bdd.prepareCall("{call ajoutDonnees(?, ?, ?)}");
+        ajoutDonnees.setInt(1, id);
+        ajoutDonnees.setDouble(2, temperature);
+        ajoutDonnees.setDouble(3, humidite);
+        ajoutDonnees.execute();
     }
     
     public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException {
