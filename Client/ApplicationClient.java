@@ -51,8 +51,7 @@ public class ApplicationClient {
                         desactiverCapteur(scanner);
                         break;
                     case 7:
-                        //calculerMoyenneEtTendance(scanner); 
-                        System.out.println("Calculer la moyenne et la tendance pour un capteur");
+                        calculerMoyenneEtTendance(scanner); 
                         break;
                     case 8:
                         System.out.println("Au revoir !");
@@ -123,6 +122,13 @@ public class ApplicationClient {
         System.out.print("Entrez le nouvel intervalle de mesure: ");
         int intervalle = scanner.nextInt();
         centrale.modifInterval(id, intervalle);
+    }
+
+    private static void calculerMoyenneEtTendance(Scanner scanner) throws Exception {
+        System.out.print("Entrez l'ID du capteur: ");
+        int id = scanner.nextInt();
+        HashMap<String, Object> data = centrale.getMoyenne(id);
+        System.out.println("Moyenne de température: " + data.get("moyenne_temperature") + "°C (" + data.get("tendance_temperature") + "), Moyenne d'humidité: " + data.get("moyenne_humidite") + "% (" + data.get("tendance_humidite") +")");
     }
 }
 

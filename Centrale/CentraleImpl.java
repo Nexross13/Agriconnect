@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import Capteur.CapteurInknowException;
@@ -46,5 +47,10 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     @Override
     public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
         centraleMetier.desactiverCapteur(id);
+    }
+
+    @Override
+    public HashMap<String, Object> getMoyenne(int id) throws RemoteException, SQLException {
+        return centraleMetier.getMoyenne(id);
     }
 }

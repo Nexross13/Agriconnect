@@ -153,4 +153,59 @@ public class CentraleMetier  {
             return null;
         }
     }
+
+    public HashMap<String, Object> getMoyenne(int id) throws SQLException {
+        String tendance;
+        HashMap<String, Object> resultats = new HashMap<String, Object>();
+
+        CallableStatement moyenne = this.bdd.prepareCall("{call CalculerMoyenneParMinute(?, ?, ?, ?, ?, ?, ?)}");
+        moyenne.setInt("ps_id_capteur", id);
+        moyenne.registerOutParameter("pheure_n", Types.DATE);
+        moyenne.registerOutParameter("pmoyenne_temperature_n", Types.DOUBLE);
+        moyenne.registerOutParameter("pmoyenne_humidite_n", Types.DOUBLE);
+        moyenne.registerOutParameter("pheure_n1", Types.DATE);
+        moyenne.registerOutParameter("pmoyenne_temperature_n1", Types.DOUBLE);
+        moyenne.registerOutParameter("pmoyenne_humidite_n1", Types.DOUBLE);
+        moyenne.executeQuery();
+        
+        double moyenneTemperatureN = moyenne.getDouble("pmoyenne_temperature_n");
+        resultats.put("moyenne_temperature", moyenneTemperatureN);
+        double moyenneTemperatureN1 = moyenne.getDouble("pmoyenne_temperature_n1");
+
+        if (moyenneTemperatureN > moyenneTemperatureN1) {
+            tendance = "hausse";
+        } else if (moyenneTemperatureN < moyenneTemperatureN1) {
+            tendance = "baisse";
+        } else {
+            tendance = "stable";
+        }
+
+        resultats.put("tendance_temperature", tendance);
+
+        double moyenneHumiditeN = moyenne.getDouble("pmoyenne_humidite_n");
+        resultats.put("moyenne_humidite", moyenneHumiditeN);
+        double moyenneHumiditeN1 = moyenne.getDouble("pmoyenne_humidite_n1");
+
+        System.out.println(moyenneHumiditeN);
+        System.out.println(moyenneTemperatureN);
+
+        if (moyenneHumiditeN > moyenneHumiditeN1) {
+            tendance = "hausse";
+        } else if (moyenneHumiditeN < moyenneHumiditeN1) {
+            tendance = "baisse";
+        } else {
+            tendance = "stable";
+        }
+
+        resultats.put("tendance_humidite", tendance);
+        
+        //Voir le contenu de la hashmap
+        for (String name: resultats.keySet()) {
+            String key = name.toString();
+            String value = resultats.get(name).toString();
+            System.out.println(key + " " + value);
+        }
+
+        return resultats;
+    }
 }
