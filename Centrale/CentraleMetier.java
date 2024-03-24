@@ -1,4 +1,5 @@
 package Centrale;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,6 +12,9 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import Arroseur.ArroseurInterface;
+
 import java.sql.*;
 
 import Capteur.CapteurInknowException;
@@ -18,6 +22,7 @@ import Capteur.CapteurInterface;
 
 public class CentraleMetier  {
     private HashMap<Integer, CapteurInterface> capteurs;
+    private HashMap<Integer, ArroseurInterface> arroseurs;
     private ScheduledExecutorService executor;
     private Connection bdd;
 
@@ -31,72 +36,7 @@ public class CentraleMetier  {
         }
     }
 
-    //Methodes
-    private void ecrireLog(String message) throws IOException {
-        LocalDateTime now = LocalDateTime.now();
-        String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
-        FileWriter writer = new FileWriter("Logs/capteur.log", true);
-        writer.write("[" + formatter + "] : " + message);
-        writer.close();
-    }
-
-    public void registerCapteur(int id) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException {
-        CapteurInterface capteur = (CapteurInterface) Naming.lookup("rmi://localhost:4444/" + id);
-        this.capteurs.put(id, capteur);
-        String message = "Le capteur " + id + " a été ajouté à la centrale" + "\n";
-        ecrireLog(message);
-        receiveData(id);
-    }
-
-    public void unregisterCapteur(int id) throws RemoteException {
-        if (this.capteurs.containsKey(id)) {
-            this.capteurs.remove(id);
-        }
-    }
-
-    public void activerCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
-        if (this.capteurs.containsKey(id) && !this.capteurs.get(id).getEstActif()) {
-            CapteurInterface capteur = this.capteurs.get(id);
-            capteur.activer();
-            String message = "Le capteur " + id + " a été activé" + "\n";
-            ecrireLog(message);
-            receiveData(id);
-        }
-    }
-
-    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
-        if (this.capteurs.containsKey(id) && this.capteurs.get(id).getEstActif()) {
-            CapteurInterface capteur = this.capteurs.get(id);
-            capteur.desactiver();
-            String message = "Le capteur " + id + " a été désactivé" + "\n";
-            ecrireLog(message);
-            executor.shutdown();
-        }
-    }
-
-    public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException, IOException {
-        if (id == 0) {
-            capteurs.values().forEach(capteur -> {
-                try {
-                    capteur.setInterval(intervalle);
-                    executor.shutdown();
-                    String message = "L'intervalle de tous les capteurs a été modifié à " + intervalle + " secondes " + "\n";
-                    ecrireLog(message);
-                    receiveData(capteur.getId());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        } else {
-            CapteurInterface capteur = this.capteurs.get(id);
-            capteur.setInterval(intervalle);
-            executor.shutdown();
-            String message = "L'intervalle du capteur " + id + " a été modifié à " + intervalle + " secondes " + "%\n";
-            ecrireLog(message);
-            receiveData(id);
-        }
-    }
-
+    //Methodes privates
     private void receiveData(int id) throws CapteurInknowException, RemoteException{
         executor = Executors.newSingleThreadScheduledExecutor();
         if(this.capteurs.containsKey(id) && this.capteurs.get(id).getEstActif()){
@@ -108,6 +48,12 @@ public class CentraleMetier  {
                         double humidite = capteur.getHumidite();
                         LocalDateTime now = LocalDateTime.now();
                         String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+
+                        for (ArroseurInterface arroseur : this.arroseurs.values()) {
+                            if (capteur.getZone() == arroseur.getZone() && humidite < arroseur.getSeuilHumi()){
+                                arroseur.arroser(capteur);
+                            }
+                        }
 
                         //ecrire dans un fichier
                         FileWriter writer = new FileWriter("Data/data.txt", true);
@@ -141,9 +87,133 @@ public class CentraleMetier  {
         ajoutDonnees.setDouble(3, humidite);
         ajoutDonnees.execute();
     }
-    
+
+    private void ecrireLog(String message, String type) throws IOException {
+        LocalDateTime now = LocalDateTime.now();
+        String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        FileWriter writer = new FileWriter("Logs/" + type + ".log", true);
+        writer.write("[" + formatter + "] : " + message);
+        writer.close();
+    }
+
+    private String verifCoordonnees(double longitude, double latitude) throws SQLException {
+        CallableStatement coordonnees = this.bdd.prepareCall("{call CheckPointInTerrains(?, ?, ?)}");
+        coordonnees.setDouble("p_longitude", longitude);
+        coordonnees.setDouble("p_latitude", latitude);
+        coordonnees.registerOutParameter("terrain_name", Types.VARCHAR);
+        coordonnees.executeQuery();
+        String terrain = coordonnees.getString("terrain_name");
+        return terrain;
+    }
+
+    //Methodes publiques
+
+    public void registerCapteur(int id, double latitude, double longitude) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
+        CapteurInterface capteur = (CapteurInterface) Naming.lookup("rmi://localhost:4444/capteur" + id);
+        String terrainName = verifCoordonnees(longitude, latitude);
+        if (terrainName == null) {
+            System.out.println("Coordonnées incorrectes");
+        } else {
+            this.capteurs.put(id, capteur);
+            capteur.setLatitude(latitude);
+            capteur.setLongitude(longitude);
+            capteur.setZone(terrainName);
+            String message = "Le capteur " + id + " a été ajouté à la centrale" + "\n";
+            ecrireLog(message, "capteur");
+            receiveData(id);
+        }
+        
+    }
+
+    public void registerArroseur(int id, double latitude, double longitude) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
+        ArroseurInterface arroseur = (ArroseurInterface) Naming.lookup("rmi://localhost:4444/arroseur" + id);
+        String terrainName = verifCoordonnees(longitude, latitude);
+        if (terrainName == null) {
+            System.out.println("Coordonnées incorrectes");
+        } else {
+            this.arroseurs.put(id, arroseur);
+            arroseur.setLatitude(latitude);
+            arroseur.setLongitude(longitude);
+            arroseur.setZone(terrainName);
+            String message = "L'arroseur " + id + " a été ajouté à la centrale" + "\n";
+            ecrireLog(message, "arroseur");
+        }
+    }
+
+    public void unregisterCapteur(int id) throws RemoteException {
+        if (this.capteurs.containsKey(id)) {
+            this.capteurs.remove(id);
+        }
+    }
+
+    public void activerCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
+        if (this.capteurs.containsKey(id) && !this.capteurs.get(id).getEstActif()) {
+            CapteurInterface capteur = this.capteurs.get(id);
+            capteur.activer();
+            String message = "Le capteur " + id + " a été activé" + "\n";
+            ecrireLog(message, "capteur");
+            receiveData(id);
+        }
+    }
+
+    public void activerArroseur(int id) throws RemoteException, CapteurInknowException, IOException {
+        if (this.arroseurs.containsKey(id) && !this.arroseurs.get(id).getEstActif()) {
+            ArroseurInterface arroseur = this.arroseurs.get(id);
+            arroseur.activer();
+            String message = "L'arroseur " + id + " a été activé" + "\n";
+            ecrireLog(message, "arroseur");
+        }
+    }
+
+    public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
+        if (this.capteurs.containsKey(id) && this.capteurs.get(id).getEstActif()) {
+            CapteurInterface capteur = this.capteurs.get(id);
+            capteur.desactiver();
+            String message = "Le capteur " + id + " a été désactivé" + "\n";
+            ecrireLog(message, "capteur");
+            executor.shutdown();
+        }
+    }
+
+    public void desactiverArroseur(int id) throws RemoteException, CapteurInknowException, IOException {
+        if (this.arroseurs.containsKey(id) && this.arroseurs.get(id).getEstActif()) {
+            ArroseurInterface arroseur = this.arroseurs.get(id);
+            arroseur.desactiver();
+            String message = "L'arroseur " + id + " a été désactivé" + "\n";
+            ecrireLog(message, "arroseur");
+            executor.shutdown();
+        }
+    }
+
+    public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException, IOException {
+        if (id == 0) {
+            capteurs.values().forEach(capteur -> {
+                try {
+                    capteur.setInterval(intervalle);
+                    executor.shutdown();
+                    String message = "L'intervalle de tous les capteurs a été modifié à " + intervalle + " secondes " + "\n";
+                    ecrireLog(message, "capteur");
+                    receiveData(capteur.getId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        } else {
+            CapteurInterface capteur = this.capteurs.get(id);
+            capteur.setInterval(intervalle);
+            executor.shutdown();
+            String message = "L'intervalle du capteur " + id + " a été modifié à " + intervalle + " secondes " + "%\n";
+            ecrireLog(message, "capteur");
+            receiveData(id);
+        }
+    }
+
     public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException {
         return this.capteurs;
+    }
+
+    public HashMap<Integer, ArroseurInterface> getArroseurs() throws RemoteException {
+        return this.arroseurs;
     }
 
     public CapteurInterface getLastInfoCapteur(int id) throws RemoteException {

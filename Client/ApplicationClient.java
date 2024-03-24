@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import Arroseur.ArroseurInterface;
 import Capteur.CapteurInterface;
 import Centrale.Centrale;
 
@@ -20,12 +21,12 @@ public class ApplicationClient {
 
             while (true) {
                 System.out.println("\nMenu:");
-                System.out.println("1. Lister les capteurs");
+                System.out.println("1. Lister le matériel connecté");
                 System.out.println("2. Obtenir infos capteur");
                 System.out.println("3. Modifier intervalle de mesure pour un capteur ou tous");
-                System.out.println("4. Ajouter un capteur");
-                System.out.println("5. Activer un capteur");
-                System.out.println("6. Désactiver un capteur");
+                System.out.println("4. Ajouter du matériel");
+                System.out.println("5. Activer du matériel");
+                System.out.println("6. Désactiver du matériel");
                 System.out.println("7. Calculer la moyenne et la tendance pour un capteur"); // via bdd
                 System.out.println("8. Quitter");
                 System.out.print("Choix: ");
@@ -33,7 +34,7 @@ public class ApplicationClient {
 
                 switch (choix) {
                     case 1:
-                        listerCapteurs();
+                        listerMateriel();
                         break;
                     case 2:
                         obtenirInfosCapteur(scanner);
@@ -42,10 +43,10 @@ public class ApplicationClient {
                         modifierIntervalleMesure(scanner);
                         break;
                     case 4:
-                        ajouterCapteur(scanner);
+                        ajouterMateriel(scanner);
                         break;
                     case 5:
-                        activerCapteur(scanner);
+                        activerMateriel(scanner);
                         break;
                     case 6:
                         desactiverCapteur(scanner);
@@ -69,13 +70,25 @@ public class ApplicationClient {
         }
     }
 
-    private static void listerCapteurs() throws Exception {
+    private static void listerMateriel() throws Exception {
         System.out.println("Liste des capteurs:");
         HashMap<Integer, CapteurInterface> listeCapteur = centrale.getCapteurs();
+        HashMap<Integer, ArroseurInterface> listeArroseur = centrale.getArroseurs();
+        System.out.println("Capteurs:");
         listeCapteur.forEach((id, capteur) -> {
             try {
                 String etat = capteur.getEstActif() ? "ACTIF" : "DESACTIVE";
-                System.out.println("[" + etat +"] ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude());
+                System.out.println("[" + etat +"] ID: " + id + ", Zone " + capteur.getZone() +"(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ")");
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
+        System.out.println("--------------------");
+        System.out.println("Arroseurs:");
+        listeArroseur.forEach((id, arroseur) -> {
+            try {
+                String etat = arroseur.getEstActif() ? "ACTIF" : "DESACTIVE";
+                System.out.println("[" + etat +"] ID: " + id + ", Zone " + arroseur.getZone() +"(" + arroseur.getLatitude() + "/" + arroseur.getLongitude() + ")");
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -89,31 +102,71 @@ public class ApplicationClient {
         if (capteur == null) {
             System.out.println("Capteur avec ID " + id + " n'existe pas ou n'est pas activé.");
         } else {
-            System.out.println("ID: " + id + ", Latitude: " + capteur.getLatitude() + ", Longitude: " + capteur.getLongitude() + " | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
+            System.out.println("ID: " + id + ", Zone: " + capteur.getZone() + "(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ") | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
         }
     }
 
-    // Ajouter un nouveau capteur et l'activer.
-    private static void ajouterCapteur(Scanner scanner) throws Exception {
-        System.out.print("Entrez l'ID du nouveau capteur: ");
-        int id = scanner.nextInt();
+    private static void ajouterMateriel(Scanner scanner) throws Exception {
+        System.out.print("Quel matériel vous voulez ajouter? (1: Capteur, 2: Arroseur): ");
+        int choix = scanner.nextInt();
+        if (choix == 1) {
+            System.out.print("Entrez l'ID du nouveau capteur: ");
+            int id = scanner.nextInt();
+            System.out.print("Entrez la latitude du capteur: ");
+            double latitude = scanner.nextDouble();
+            System.out.print("Entrez la longitude du capteur: ");
+            double longitude = scanner.nextDouble();
+            centrale.registerCapteur(id, latitude, longitude);
+            System.out.println("Nouveau capteur avec ID " + id + " a été ajouté.");
+        } else if (choix == 2) {
+            System.out.print("Entrez l'ID du nouvel arroseur: ");
+            int id = scanner.nextInt();
+            System.out.print("Entrez la latitude de l'arroseur: ");
+            double latitude = scanner.nextDouble();
+            System.out.print("Entrez la longitude de l'arroseur: ");
+            double longitude = scanner.nextDouble();
+            centrale.registerArroseur(id, latitude, longitude);
+            System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
+        } else {
+            System.out.println("Choix invalide.");
+        }
         
-        centrale.registerCapteur(id);
-        System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
     }
 
-    private static void activerCapteur(Scanner scanner) throws Exception {
-        System.out.print("Entrez l'ID du capteur: ");
-        int id = scanner.nextInt();
-        centrale.activerCapteur(id);
-        System.out.println("Capteur " + id + " activé.");
+    private static void activerMateriel(Scanner scanner) throws Exception {
+        System.out.print("Quel matériel vous voulez ajouter? (1: Capteur, 2: Arroseur): ");
+        int choix = scanner.nextInt();
+        if (choix == 1) {
+            System.out.print("Entrez l'ID du capteur: ");
+            int id = scanner.nextInt();
+            centrale.activerCapteur(id);
+            System.out.println("Capteur " + id + " activé.");
+        } else if (choix == 2) {
+            System.out.print("Entrez l'ID de l'arroseur: ");
+            int id = scanner.nextInt();
+            centrale.activerArroseur(id);
+            System.out.println("Arroseur " + id + " activé.");
+        } else {
+            System.out.println("Choix invalide.");
+        }
     }
 
     private static void desactiverCapteur(Scanner scanner) throws Exception {
-        System.out.print("Entrez l'ID du capteur: ");
-        int id = scanner.nextInt();
-        centrale.desactiverCapteur(id);
-        System.out.println("Capteur " + id + " désactivé.");
+        System.out.print("Entrez le type de matériel que vous voulez désactiver (1: Capteur, 2: Arroseur): ");
+        int choix = scanner.nextInt();
+        if (choix == 1) {
+            System.out.print("Entrez l'ID du capteur: ");
+            int id = scanner.nextInt();
+            centrale.desactiverCapteur(id);
+            System.out.println("Capteur " + id + " désactivé.");
+        } else if (choix == 2) {
+            System.out.print("Entrez l'ID de l'arroseur: ");
+            int id = scanner.nextInt();
+            centrale.desactiverArroseur(id);
+            System.out.println("Arroseur " + id + " désactivé.");
+        } else {
+            System.out.println("Choix invalide.");
+        }
     }
 
     private static void modifierIntervalleMesure(Scanner scanner) throws Exception {

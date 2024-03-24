@@ -15,4 +15,9 @@ public interface CapteurInterface extends Remote {
     int getInterval()throws RemoteException;
     void setInterval(int intervalle)throws RemoteException;
     boolean getEstActif()throws RemoteException;
+    void setHumidite(int ajout) throws RemoteException;
+    void setLatitude(double latitude) throws RemoteException;
+    void setLongitude(double longitude) throws RemoteException;
+    void setZone(String terrain) throws RemoteException;
+    String getZone() throws RemoteException;
 }

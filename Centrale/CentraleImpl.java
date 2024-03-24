@@ -7,6 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import Arroseur.ArroseurInterface;
 import Capteur.CapteurInknowException;
 import Capteur.CapteurInterface;
 
@@ -20,8 +21,13 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
-    public void registerCapteur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException{
-        centraleMetier.registerCapteur(id);
+    public void registerCapteur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
+        centraleMetier.registerCapteur(id, latitude, longitude);
+    }
+
+    @Override
+    public void registerArroseur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
+        centraleMetier.registerArroseur(id, latitude, longitude);
     }
 
     @Override
@@ -35,6 +41,11 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
+    public HashMap<Integer, ArroseurInterface> getArroseurs() throws RemoteException {
+        return centraleMetier.getArroseurs();
+    }
+
+    @Override
     public CapteurInterface getLastInfoCapteur(int id) throws RemoteException {
         return centraleMetier.getLastInfoCapteur(id);
     }
@@ -45,7 +56,17 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
+    public void activerArroseur(int id) throws RemoteException, CapteurInknowException, IOException {
+        centraleMetier.activerCapteur(id);
+    }
+
+    @Override
     public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException {
+        centraleMetier.desactiverCapteur(id);
+    }
+
+    @Override
+    public void desactiverArroseur(int id) throws RemoteException, CapteurInknowException, IOException {
         centraleMetier.desactiverCapteur(id);
     }
 
