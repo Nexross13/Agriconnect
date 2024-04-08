@@ -9,10 +9,11 @@ import java.util.HashMap;
 import Arroseur.ArroseurInterface;
 import Capteur.CapteurInknowException;
 import Capteur.CapteurInterface;
+import Client.ClientInterface;
 
 public interface Centrale extends java.rmi.Remote {
-    public void registerCapteur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException;
-    public void registerArroseur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException;
+    public void registerCapteur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException;
+    public void registerArroseur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException;
     public void modifInterval(int id, int intervalle) throws RemoteException, CapteurInknowException, IOException;
     public HashMap<Integer, CapteurInterface> getCapteurs() throws RemoteException;
     public HashMap<Integer, ArroseurInterface> getArroseurs() throws RemoteException;
@@ -22,4 +23,5 @@ public interface Centrale extends java.rmi.Remote {
     public void desactiverCapteur(int id) throws RemoteException, CapteurInknowException, IOException;
     public void desactiverArroseur(int id) throws RemoteException, CapteurInknowException, IOException;
     public HashMap<String, Object> getMoyenne(int id) throws RemoteException, SQLException;
+    public void addClient(ClientInterface client) throws RemoteException, IOException;
 }

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import Arroseur.ArroseurInterface;
 import Capteur.CapteurInknowException;
 import Capteur.CapteurInterface;
+import Client.ClientInterface;
 
 public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     
@@ -21,13 +22,13 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     }
 
     @Override
-    public void registerCapteur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
-        centraleMetier.registerCapteur(id, latitude, longitude);
+    public void registerCapteur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
+        centraleMetier.registerCapteur(id);
     }
 
     @Override
-    public void registerArroseur(int id, double latitude, double longitude) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
-        centraleMetier.registerArroseur(id, latitude, longitude);
+    public void registerArroseur(int id) throws RemoteException, MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException{
+        centraleMetier.registerArroseur(id);
     }
 
     @Override
@@ -73,5 +74,10 @@ public class CentraleImpl extends UnicastRemoteObject implements Centrale{
     @Override
     public HashMap<String, Object> getMoyenne(int id) throws RemoteException, SQLException {
         return centraleMetier.getMoyenne(id);
+    }
+
+    @Override
+    public void addClient(ClientInterface client) throws RemoteException, IOException {
+        centraleMetier.addClient(client);
     }
 }

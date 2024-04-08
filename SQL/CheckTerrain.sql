@@ -33,6 +33,8 @@ BEGIN
     -- Si le point est dans un terrain, trouver et retourner le nom du terrain
     IF found THEN
         SELECT name INTO terrain_name FROM terrain WHERE id = terrain_id;
+    ELSE 
+        SET terrain_name = 'Aucun terrain';
     END IF;
 
     -- Le nom du terrain est maintenant stocké dans `terrain_name` et sera retourné

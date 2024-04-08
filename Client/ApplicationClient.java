@@ -1,7 +1,11 @@
 package Client;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -9,27 +13,29 @@ import Arroseur.ArroseurInterface;
 import Capteur.CapteurInterface;
 import Centrale.Centrale;
 
-public class ApplicationClient {
+public class ApplicationClient extends UnicastRemoteObject implements ClientInterface {
     // Référence à l'interface de la centrale, utilisée pour appeler les méthodes distantes.
     private static Centrale centrale;
+    private int id;
 
-    public static void main(String[] args) {
+    public ApplicationClient(int id) throws RemoteException {
+        super();
+        this.id = id;
+    }
+
+    @Override
+    public void connecter() throws RemoteException, MalformedURLException, NotBoundException, IOException {
+        centrale = (Centrale) Naming.lookup("rmi://localhost:4444/centrale");
+        centrale.addClient(this);
+    }
+
+    @Override
+    public void demarrage() {
         try {
-             // Recherche de l'objet distant de la centrale par son nom dans le service de nommage RMI.
-            centrale = (Centrale) Naming.lookup("rmi://localhost:4444/centrale");
             Scanner scanner = new Scanner(System.in);
 
             while (true) {
-                System.out.println("\nMenu:");
-                System.out.println("1. Lister le matériel connecté");
-                System.out.println("2. Obtenir infos capteur");
-                System.out.println("3. Modifier intervalle de mesure pour un capteur ou tous");
-                System.out.println("4. Ajouter du matériel");
-                System.out.println("5. Activer du matériel");
-                System.out.println("6. Désactiver du matériel");
-                System.out.println("7. Calculer la moyenne et la tendance pour un capteur"); // via bdd
-                System.out.println("8. Quitter");
-                System.out.print("Choix: ");
+                printMenu();
                 int choix = scanner.nextInt();
 
                 switch (choix) {
@@ -54,7 +60,7 @@ public class ApplicationClient {
                     case 7:
                         calculerMoyenneEtTendance(scanner); 
                         break;
-                    case 8:
+                    case 0:
                         System.out.println("Au revoir !");
                         System.exit(0);
                         break;
@@ -70,6 +76,32 @@ public class ApplicationClient {
         }
     }
 
+    private static void printMenu() {
+        String border = new String(new char[31]).replace("\0", "*");
+        String title = "GESTION DU MATÉRIEL";
+        
+        // Bordure supérieure
+        System.out.println("\033[0;33m" + border + "\033[0m");
+        // Titre centré
+        System.out.println("\033[0;33m*\033[0m" + "     " + "\033[1;34m" + title + "\033[0m" + "     \033[0;33m*\033[0m");
+        // Bordure inférieure du titre
+        System.out.println("\033[0;33m" + border + "\033[0m\n");
+        
+        // Options du menu
+        System.out.println("\033[0;32m1.\033[0m Lister le matériel connecté");
+        System.out.println("\033[0;32m2.\033[0m Obtenir infos capteur");
+        System.out.println("\033[0;32m3.\033[0m Modifier intervalle de mesure pour un capteur ou tous");
+        System.out.println("\033[0;32m4.\033[0m Ajouter du matériel");
+        System.out.println("\033[0;32m5.\033[0m Activer du matériel");
+        System.out.println("\033[0;32m6.\033[0m Désactiver du matériel");
+        System.out.println("\033[0;32m7.\033[0m Calculer la moyenne et la tendance pour un capteur");
+        System.out.println("\033[0;31m0.\033[0m Quitter");
+        
+        // Pied de page du menu
+        System.out.println("\n\033[0;33m" + border + "\033[0m");
+        System.out.print("Entrez votre choix : ");
+    }
+
     private static void listerMateriel() throws Exception {
         System.out.println("Liste des capteurs:");
         HashMap<Integer, CapteurInterface> listeCapteur = centrale.getCapteurs();
@@ -78,7 +110,7 @@ public class ApplicationClient {
         listeCapteur.forEach((id, capteur) -> {
             try {
                 String etat = capteur.getEstActif() ? "ACTIF" : "DESACTIVE";
-                System.out.println("[" + etat +"] ID: " + id + ", Zone " + capteur.getZone() +"(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ")");
+                System.out.println("[" + etat +"] ID: " + id + ", " + capteur.getZone() +"(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ")");
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -88,7 +120,7 @@ public class ApplicationClient {
         listeArroseur.forEach((id, arroseur) -> {
             try {
                 String etat = arroseur.getEstActif() ? "ACTIF" : "DESACTIVE";
-                System.out.println("[" + etat +"] ID: " + id + ", Zone " + arroseur.getZone() +"(" + arroseur.getLatitude() + "/" + arroseur.getLongitude() + ")");
+                System.out.println("[" + etat +"] ID: " + id + ", " + arroseur.getZone() +"(" + arroseur.getLatitude() + "/" + arroseur.getLongitude() + ")");
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -102,7 +134,7 @@ public class ApplicationClient {
         if (capteur == null) {
             System.out.println("Capteur avec ID " + id + " n'existe pas ou n'est pas activé.");
         } else {
-            System.out.println("ID: " + id + ", Zone: " + capteur.getZone() + "(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ") | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
+            System.out.println("ID: " + id + ", " + capteur.getZone() + "(" + capteur.getLatitude() + "/" + capteur.getLongitude() + ") | Temperature: " + capteur.getTemperature() + "°C, Humidité: " + capteur.getHumidite() + "%");
         }
     }
 
@@ -112,21 +144,15 @@ public class ApplicationClient {
         if (choix == 1) {
             System.out.print("Entrez l'ID du nouveau capteur: ");
             int id = scanner.nextInt();
-            System.out.print("Entrez la latitude du capteur: ");
-            double latitude = scanner.nextDouble();
-            System.out.print("Entrez la longitude du capteur: ");
-            double longitude = scanner.nextDouble();
-            centrale.registerCapteur(id, latitude, longitude);
-            System.out.println("Nouveau capteur avec ID " + id + " a été ajouté.");
+            centrale.registerCapteur(id);
+            System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
+
         } else if (choix == 2) {
             System.out.print("Entrez l'ID du nouvel arroseur: ");
             int id = scanner.nextInt();
-            System.out.print("Entrez la latitude de l'arroseur: ");
-            double latitude = scanner.nextDouble();
-            System.out.print("Entrez la longitude de l'arroseur: ");
-            double longitude = scanner.nextDouble();
-            centrale.registerArroseur(id, latitude, longitude);
-            System.out.println("Nouveau capteur avec ID " + id + " a été ajouté et activé.");
+            centrale.registerArroseur(id);
+            System.out.println("Nouvel arroseur avec ID " + id + " a été ajouté.");
+            
         } else {
             System.out.println("Choix invalide.");
         }
@@ -182,6 +208,16 @@ public class ApplicationClient {
         int id = scanner.nextInt();
         HashMap<String, Object> data = centrale.getMoyenne(id);
         System.out.println("Moyenne de température: " + data.get("moyenne_temperature") + "°C (" + data.get("tendance_temperature") + "), Moyenne d'humidité: " + data.get("moyenne_humidite") + "% (" + data.get("tendance_humidite") +")");
+    }
+    
+    @Override
+    public void receiveNotification(String message) throws RemoteException {
+        System.out.println(message);
+    }
+
+    @Override
+    public int getId() throws RemoteException{
+        return id;
     }
 }
 

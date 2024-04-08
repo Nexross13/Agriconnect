@@ -19,15 +19,19 @@ import java.sql.*;
 
 import Capteur.CapteurInknowException;
 import Capteur.CapteurInterface;
+import Client.ClientInterface;
 
 public class CentraleMetier  {
     private HashMap<Integer, CapteurInterface> capteurs;
     private HashMap<Integer, ArroseurInterface> arroseurs;
     private ScheduledExecutorService executor;
     private Connection bdd;
+    private HashMap<Integer, ClientInterface> clients;
 
     public CentraleMetier() {
         this.capteurs = new HashMap<Integer, CapteurInterface>();
+        this.arroseurs = new HashMap<Integer, ArroseurInterface>();
+        this.clients = new HashMap<Integer, ClientInterface>();
         try {
             String urlDB = "jdbc:mysql://localhost:8889/agriconnect";
             this.bdd = DriverManager.getConnection(urlDB, "root", "root");
@@ -49,19 +53,24 @@ public class CentraleMetier  {
                         LocalDateTime now = LocalDateTime.now();
                         String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
 
-                        for (ArroseurInterface arroseur : this.arroseurs.values()) {
-                            if (capteur.getZone() == arroseur.getZone() && humidite < arroseur.getSeuilHumi()){
-                                arroseur.arroser(capteur);
-                            }
-                        }
-
                         //ecrire dans un fichier
                         FileWriter writer = new FileWriter("Data/data.txt", true);
                         writer.write("[" + formatter + "] Capteur " + id + " : " + temperature + "°C, " + humidite + "%\n");
                         writer.close();
-                        
+
                         //ecrire les data dans bdd
                         writeDataInBdd(id, temperature, humidite);
+                        notifyClients(formatter + " : Capteur " + id + " : " + temperature + "°C, " + humidite + "%");
+
+                        if (!arroseurs.isEmpty()) {
+                            for (ArroseurInterface arroseur : this.arroseurs.values()) {
+                                if (capteur.getZone() == arroseur.getZone() && humidite < arroseur.getSeuilHumi()){
+                                    arroseur.activer(capteurs);
+                                    notifyClients(formatter + " : L'arroseur " + arroseur.getId() + " a été activé");
+                                }
+                            }
+                        }
+
                         break;
                     } catch (RemoteException e) {
                         e.printStackTrace();
@@ -106,17 +115,32 @@ public class CentraleMetier  {
         return terrain;
     }
 
+    private void notifyClients(String message) throws RemoteException {
+        if (clients.isEmpty()) {
+            System.out.println("Aucun client connecté");
+            return;
+        }
+
+        for (ClientInterface client : clients.values()) {
+            client.receiveNotification(message);
+        }
+    }
+
     //Methodes publiques
 
-    public void registerCapteur(int id, double latitude, double longitude) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
+    public void addClient(ClientInterface client) throws RemoteException, IOException {
+        clients.put(client.getId(), client);
+        String message = "Le client " + client.getId() + " a été ajouté à la centrale" + "\n";
+        ecrireLog(message, "client");
+    }
+
+    public void registerCapteur(int id) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
         CapteurInterface capteur = (CapteurInterface) Naming.lookup("rmi://localhost:4444/capteur" + id);
-        String terrainName = verifCoordonnees(longitude, latitude);
-        if (terrainName == null) {
+        String terrainName = verifCoordonnees(capteur.getLongitude(), capteur.getLatitude());
+        if (terrainName.equals("Aucun terrain")) {
             System.out.println("Coordonnées incorrectes");
         } else {
             this.capteurs.put(id, capteur);
-            capteur.setLatitude(latitude);
-            capteur.setLongitude(longitude);
             capteur.setZone(terrainName);
             String message = "Le capteur " + id + " a été ajouté à la centrale" + "\n";
             ecrireLog(message, "capteur");
@@ -125,15 +149,13 @@ public class CentraleMetier  {
         
     }
 
-    public void registerArroseur(int id, double latitude, double longitude) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
+    public void registerArroseur(int id) throws MalformedURLException, RemoteException, NotBoundException, CapteurInknowException, IOException, SQLException {
         ArroseurInterface arroseur = (ArroseurInterface) Naming.lookup("rmi://localhost:4444/arroseur" + id);
-        String terrainName = verifCoordonnees(longitude, latitude);
-        if (terrainName == null) {
+        String terrainName = verifCoordonnees(arroseur.getLongitude(), arroseur.getLatitude());
+        if (terrainName.equals("Aucun terrain")) {
             System.out.println("Coordonnées incorrectes");
         } else {
             this.arroseurs.put(id, arroseur);
-            arroseur.setLatitude(latitude);
-            arroseur.setLongitude(longitude);
             arroseur.setZone(terrainName);
             String message = "L'arroseur " + id + " a été ajouté à la centrale" + "\n";
             ecrireLog(message, "arroseur");
@@ -159,7 +181,7 @@ public class CentraleMetier  {
     public void activerArroseur(int id) throws RemoteException, CapteurInknowException, IOException {
         if (this.arroseurs.containsKey(id) && !this.arroseurs.get(id).getEstActif()) {
             ArroseurInterface arroseur = this.arroseurs.get(id);
-            arroseur.activer();
+            arroseur.activer(capteurs);
             String message = "L'arroseur " + id + " a été activé" + "\n";
             ecrireLog(message, "arroseur");
         }

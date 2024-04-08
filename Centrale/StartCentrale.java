@@ -22,7 +22,7 @@ public class StartCentrale {
             LocalDateTime now = LocalDateTime.now();
             String formatter = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
             FileWriter writer = new FileWriter("Logs/log.txt", true);
-            writer.write("[" + formatter + "] : " + "Serveur lancé" + "%\n");
+            writer.write("[" + formatter + "] : " + "Serveur lancé" + "\n");
             writer.close();
             System.out.println("Serveur lancé");
 
