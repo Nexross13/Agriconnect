@@ -13,8 +13,9 @@ public class CapteurImpl extends UnicastRemoteObject implements CapteurInterface
     private String zone;
     private int intervalle = 5;
     // Dernières mesures de température et d'humidité, initialisées avec des valeurs aléatoires.
-    private double temperature = 25 + Math.round(Math.random() * 15 * 10) / 10.0;
-    private double humidite = Math.round(Math.random() * 100 * 10) / 10.0;
+    private double temperature = 25 + Math.round(Math.random() * 15 * 10) / 10.0; 
+    private double humidite = 10;
+    //private double humidite = Math.round(Math.random() * 100 * 10) / 10.0; // 0-100
     private boolean estActif;
 
     // Constructeur du capteur implémentant les propriétés nécessaires.
@@ -22,6 +23,10 @@ public class CapteurImpl extends UnicastRemoteObject implements CapteurInterface
         super();
         this.id = id;
         this.estActif = true;
+        // generate random latitude entre 44.66307858413157 et 44.73046542148722
+        this.latitude = 44.66307858413157 + Math.random() * (44.73046542148722 - 44.66307858413157);
+        // generate random longitude entre -0.4345503688752195 et -0.4751061712705495
+        this.longitude = -0.4345503688752195 + Math.random() * (-0.4751061712705495 - -0.4345503688752195);
     }
 
     // Getters pour les propriétés du capteur.
@@ -60,13 +65,6 @@ public class CapteurImpl extends UnicastRemoteObject implements CapteurInterface
     }
 
     // Setters pour les propriétés du capteur.
-    public void setLatitude(double latitude) throws RemoteException{
-        this.latitude = latitude;
-    }
-
-    public void setLongitude(double longitude) throws RemoteException{
-        this.longitude = longitude;
-    }
 
     public void setHumidite(int ajout) throws RemoteException{
         this.humidite += ajout;

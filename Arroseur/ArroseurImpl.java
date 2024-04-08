@@ -2,6 +2,7 @@ package Arroseur;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +25,16 @@ public class ArroseurImpl extends UnicastRemoteObject implements ArroseurInterfa
     public ArroseurImpl(int id) throws RemoteException {
         super();
         this.id = id;
-        this.seuilTemp = 30.0;
+        // generate random latitude entre 44.66307858413157 et 44.73046542148722
+        this.latitude = 44.66307858413157 + Math.random() * (44.73046542148722 - 44.66307858413157);
+        // generate random longitude entre -0.4345503688752195 et -0.4751061712705495
+        this.longitude = -0.4345503688752195 + Math.random() * (-0.4751061712705495 - -0.4345503688752195);
+        this.seuilTemp = 40.0;
         this.seuilHumi = 35.0;
         this.estActif = false;
     }
 
-    // Getters pour les propriétés du capteur.
+    // Getters pour les propriétés de l'arroseur.
     public int getId() throws RemoteException{
         return id;
     }
@@ -58,14 +63,7 @@ public class ArroseurImpl extends UnicastRemoteObject implements ArroseurInterfa
         return zone;
     }
 
-    // Setters pour les propriétés du capteur.
-    public void setLatitude(double latitude) throws RemoteException{
-        this.latitude = latitude;
-    }
-
-    public void setLongitude(double longitude) throws RemoteException{
-        this.longitude = longitude;
-    }
+    // Setters pour les propriétés de l'arroseur.
     
     public void setSeuilTemp(double seuilTemp) throws RemoteException{
         this.seuilTemp = seuilTemp;
@@ -79,15 +77,16 @@ public class ArroseurImpl extends UnicastRemoteObject implements ArroseurInterfa
         this.zone = zone;
     }
 
-    // Active le capteur, l'ajoute à la centrale et commence l'envoi périodique des mesures.
+    // Active l'arroseur, l'ajoute à la centrale et commence l'envoi périodique des mesures.
     @Override
-    public void activer() throws RemoteException {
+    public void activer(HashMap<Integer, CapteurInterface> capteurs) throws RemoteException {
         if (!estActif) {
             estActif = true;
+            arroser(capteurs);
         }
     }
 
-    // Désactive le capteur en arrêtant le timer.
+    // Désactive l'arroseur en arrêtant le timer.
     @Override
     public void desactiver() throws RemoteException {
         if (estActif) {
@@ -96,24 +95,28 @@ public class ArroseurImpl extends UnicastRemoteObject implements ArroseurInterfa
     }
 
     // Arrose la plante.
-    @Override
-    public void arroser(CapteurInterface capteur) throws RemoteException {
-        System.out.println("Arrosage de la plante...");
+    private void arroser(HashMap<Integer, CapteurInterface> capteurs) throws RemoteException {
         // Crée un ScheduledExecutorService avec 1 thread.
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         
         // Crée une tâche qui incrémente la variable i toutes les 10 secondes.
          // Utilise un tableau pour permettre la modification dans l'expression lambda
-        Runnable task = () -> {
-            try {
-                capteur.setHumidite(1);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+        for (CapteurInterface capteur : capteurs.values()) {
+            if (capteur.getZone() != this.zone || capteur.getEstActif() == false){
+                break;
             }
-        };
 
-        // Planifie la tâche pour s'exécuter toutes les 10 secondes
-        executor.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
+            Runnable task = () -> {
+                try {
+                    capteur.setHumidite(1);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            };
+
+            // Planifie la tâche pour s'exécuter toutes les 10 secondes
+            executor.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
+        }
 
         // Crée une autre tâche pour stopper l'executor après 2 minutes.
         executor.schedule(() -> {
